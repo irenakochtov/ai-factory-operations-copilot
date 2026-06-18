@@ -1,0 +1,20 @@
+[
+    {
+      "asset_id": "RACK-E17",
+      "asset_type": "gpu_rack",
+      "site": "DC-TLV-01",
+      "room": "AI-HALL-1",
+      "history_window": "24h",
+      "events": [
+        {
+          "timestamp": "2026-06-17T10:00:00Z",
+          "source_system": "BMS",
+          "event_type": "rack_inlet_temp_high",
+          "metric": "rack_inlet_temp_c",
+          "value": 33.5,
+          "threshold": 30,
+          "severity": "medium"
+        }
+      ]
+    }
+  ]
