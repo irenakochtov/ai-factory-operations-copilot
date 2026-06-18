@@ -1,7 +1,12 @@
-def classify_incident(incident: dict) -> dict:
+def event_text(events: list) -> str:
+    return " ".join(str(event).lower() for event in events)
 
+
+def classify_incident(incident: dict) -> dict:
     data_sources = incident.get("data_sources", {})
 
+    bms_events = data_sources.get("bms_events", [])
+    dcim_events = data_sources.get("dcim_events", [])
     gpu_events = data_sources.get("gpu_events", [])
     network_events = data_sources.get("network_events", [])
     storage_events = data_sources.get("storage_events", [])
@@ -9,9 +14,31 @@ def classify_incident(incident: dict) -> dict:
     environmental_events = data_sources.get("environmental_events", [])
     security_events = data_sources.get("security_events", [])
 
-    #
-    # Security
-    #
+    cooling_text = event_text(
+        bms_events
+        + dcim_events
+        + environmental_events
+        + gpu_events
+    )
+
+    cooling_keywords = [
+        "cooling",
+        "cdu",
+        "crac",
+        "crah",
+        "coolant",
+        "flow",
+        "pressure",
+        "temperature",
+        "temp",
+        "thermal",
+        "throttle",
+        "throttling",
+        "rack_inlet",
+        "inlet",
+        "hot aisle",
+        "containment",
+    ]
 
     if security_events:
         return {
@@ -21,10 +48,6 @@ def classify_incident(incident: dict) -> dict:
             "rule_id": "SEC-001",
         }
 
-    #
-    # Storage
-    #
-
     if storage_events:
         return {
             "incident_type": "storage_risk",
@@ -32,10 +55,6 @@ def classify_incident(incident: dict) -> dict:
             "severity_cap": "medium",
             "rule_id": "STOR-001",
         }
-
-    #
-    # Network
-    #
 
     if network_events:
         return {
@@ -45,10 +64,6 @@ def classify_incident(incident: dict) -> dict:
             "rule_id": "NET-001",
         }
 
-    #
-    # Power
-    #
-
     if power_events:
         return {
             "incident_type": "power_risk",
@@ -57,9 +72,13 @@ def classify_incident(incident: dict) -> dict:
             "rule_id": "PWR-001",
         }
 
-    #
-    # Cooling / Environmental
-    #
+    if any(keyword in cooling_text for keyword in cooling_keywords):
+        return {
+            "incident_type": "cooling_risk",
+            "escalation_team": "Facilities",
+            "severity_cap": "critical",
+            "rule_id": "COOL-001",
+        }
 
     if environmental_events:
         return {
@@ -68,10 +87,6 @@ def classify_incident(incident: dict) -> dict:
             "severity_cap": "high",
             "rule_id": "ENV-001",
         }
-
-    #
-    # GPU
-    #
 
     if gpu_events:
         return {

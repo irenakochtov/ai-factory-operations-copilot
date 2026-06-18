@@ -3,9 +3,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from copilot import analyze_incident
-from correlation_engine import calculate_correlation_context
-from incident_preprocessor import prepare_incident_for_inference
+from pipeline import run_analysis_pipeline
 
 DATASET_PATH = "dataset_v2.json"
 REPORT_PATH = "results/eval_report.json"
@@ -15,19 +13,10 @@ def normalize(value):
     return str(value).strip().lower()
 
 
-def analyze_incident_like_api(incident: dict) -> dict:
-    clean_incident = prepare_incident_for_inference(incident)
-    correlation_context = calculate_correlation_context(clean_incident)
-    enriched_incident = {
-        "incident": clean_incident,
-        "correlation_context": correlation_context,
-    }
-    return analyze_incident(enriched_incident)
-
-
 def evaluate_incident(incident: dict) -> dict:
     ground_truth = incident["ground_truth"]
-    prediction = analyze_incident_like_api(incident)
+    result = run_analysis_pipeline(incident)
+    prediction = result["analysis"]
 
     checks = {
         "severity": normalize(prediction.get("severity"))
@@ -51,6 +40,7 @@ def evaluate_incident(incident: dict) -> dict:
             "incident_type": ground_truth["incident_type"],
             "escalation_team": ground_truth["escalation_team"],
         },
+        "deterministic_classification": result["deterministic_classification"],
         "correct": checks,
         "all_correct": all(checks.values()),
     }
@@ -155,7 +145,10 @@ def main():
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "dataset_path": DATASET_PATH,
-        "eval_path": "api_equivalent (preprocessor + correlation + analyze)",
+        "eval_path": (
+            "pipeline (preprocessor + correlation + classification + "
+            "analyze + validation)"
+        ),
         "labels_stripped": True,
         "summary": summary,
         "failures": failures,

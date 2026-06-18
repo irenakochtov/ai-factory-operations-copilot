@@ -2,9 +2,7 @@ import json
 import re
 from pathlib import Path
 
-from copilot import analyze_incident
-from correlation_engine import calculate_correlation_context
-from incident_preprocessor import prepare_incident_for_inference
+from pipeline import run_analysis_pipeline
 
 DATASET_PATH = "dataset_v2.json"
 OUTPUT_PATH = "results/demo_output.txt"
@@ -96,26 +94,12 @@ def main():
 
     for incident_id in DEMO_INCIDENTS:
         incident = find_incident(data, incident_id)
-
-        clean_incident = prepare_incident_for_inference(
-            incident
-        )
-
-        correlation_context = calculate_correlation_context(
-            clean_incident
-        )
-
-        enriched_incident = {
-            "incident": clean_incident,
-            "correlation_context": correlation_context,
-        }
-
-        analysis = analyze_incident(enriched_incident)
+        result = run_analysis_pipeline(incident)
 
         result_text = format_demo_result(
             incident_id=incident_id,
-            correlation_context=correlation_context,
-            analysis=analysis,
+            correlation_context=result["correlation_context"],
+            analysis=result["analysis"],
         )
 
         output_lines.append(result_text)

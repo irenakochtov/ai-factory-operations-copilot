@@ -2,19 +2,15 @@ import json
 
 from fastapi import FastAPI, HTTPException
 
-from classification_engine import classify_incident
-from copilot import analyze_incident
-from correlation_engine import calculate_correlation_context
-from incident_preprocessor import prepare_incident_for_inference
+from pipeline import run_analysis_pipeline, run_correlation_context
 from prometheus_adapter import convert_alert_to_incident
-from rules_engine import apply_operational_rules
 
 DATASET_PATH = "dataset_v2.json"
 
 app = FastAPI(
     title="AI Factory Operations Copilot",
     description="AI-powered incident triage API for AI factories and data center operations.",
-    version="0.6.0",
+    version="0.7.0",
 )
 
 
@@ -36,40 +32,12 @@ def find_incident_by_id(incident_id: str):
     )
 
 
-def run_analysis_pipeline(incident: dict) -> dict:
-    clean_incident = prepare_incident_for_inference(incident)
-
-    correlation_context = calculate_correlation_context(clean_incident)
-
-    deterministic_classification = classify_incident(clean_incident)
-
-    enriched_incident = {
-        "incident": clean_incident,
-        "correlation_context": correlation_context,
-        "deterministic_classification": deterministic_classification,
-    }
-
-    prediction = analyze_incident(enriched_incident)
-
-    prediction = apply_operational_rules(
-        clean_incident,
-        prediction,
-    )
-
-    return {
-        "incident_id": clean_incident.get("incident_id"),
-        "correlation_context": correlation_context,
-        "deterministic_classification": deterministic_classification,
-        "analysis": prediction,
-    }
-
-
 @app.get("/")
 def health_check():
     return {
         "status": "ok",
         "service": "AI Factory Operations Copilot",
-        "version": "0.6.0",
+        "version": "0.7.0",
     }
 
 
@@ -94,8 +62,7 @@ def list_incidents():
 @app.get("/correlation/{incident_id}")
 def get_correlation_context(incident_id: str):
     incident = find_incident_by_id(incident_id)
-    clean_incident = prepare_incident_for_inference(incident)
-    correlation_context = calculate_correlation_context(clean_incident)
+    correlation_context = run_correlation_context(incident)
 
     return {
         "incident_id": incident_id,
