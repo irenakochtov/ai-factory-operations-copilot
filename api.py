@@ -5,6 +5,7 @@ from typing import Literal, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
+from cluster_engine import build_incident_clusters
 from pipeline import run_analysis_pipeline, run_correlation_context
 from prometheus_adapter import convert_alert_to_incident
 from risk_engine import build_risk_summary
@@ -142,6 +143,22 @@ def get_risk_summary(max_incidents: int = 5):
             )
 
     return build_risk_summary(analyses)
+
+
+@app.get("/incident_clusters")
+def get_incident_clusters(max_incidents: int = 10):
+    data = load_dataset()
+    incidents = data["incidents"][:max_incidents]
+
+    analyses = []
+
+    for incident in incidents:
+        try:
+            analyses.append(run_analysis_pipeline(incident))
+        except Exception:
+            continue
+
+    return build_incident_clusters(analyses)
 
 
 @app.get("/correlation/{incident_id}")
