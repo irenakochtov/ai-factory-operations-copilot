@@ -1,3 +1,4 @@
+from cascade_engine import build_failure_cascade
 from classification_engine import classify_incident
 from copilot import analyze_incident
 from correlation_engine import calculate_correlation_context
@@ -35,6 +36,10 @@ def run_analysis_pipeline(incident: dict) -> dict:
         incident_type=prediction.get("incident_type"),
         severity=prediction.get("severity"),
         time_to_critical_minutes=prediction.get("time_to_critical_minutes"),
+    )
+
+    prediction["failure_cascade"] = build_failure_cascade(
+        prediction.get("incident_type"),
     )
 
     return {
