@@ -1,6 +1,7 @@
 from classification_engine import classify_incident
 from copilot import analyze_incident
 from correlation_engine import calculate_correlation_context
+from forecast_engine import generate_failure_forecast
 from incident_preprocessor import prepare_incident_for_inference
 from validation_engine import enforce_deterministic_classification
 
@@ -28,6 +29,12 @@ def run_analysis_pipeline(incident: dict) -> dict:
     prediction = enforce_deterministic_classification(
         prediction,
         deterministic_classification,
+    )
+
+    prediction["failure_forecast"] = generate_failure_forecast(
+        incident_type=prediction.get("incident_type"),
+        severity=prediction.get("severity"),
+        time_to_critical_minutes=prediction.get("time_to_critical_minutes"),
     )
 
     return {
