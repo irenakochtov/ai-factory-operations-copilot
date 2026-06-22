@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from pipeline import run_analysis_pipeline, run_correlation_context
 from prometheus_adapter import convert_alert_to_incident
+from risk_engine import build_risk_summary
 
 DATASET_PATH = "dataset_v2.json"
 
@@ -115,6 +116,32 @@ def list_incidents():
             for incident in data["incidents"]
         ],
     }
+
+
+@app.get("/risk_summary")
+def get_risk_summary(max_incidents: int = 5):
+    data = load_dataset()
+    incidents = data["incidents"][:max_incidents]
+
+    analyses = []
+
+    for incident in incidents:
+        try:
+            analyses.append(run_analysis_pipeline(incident))
+        except Exception as error:
+            analyses.append(
+                {
+                    "incident_id": incident.get("incident_id"),
+                    "error": str(error),
+                    "analysis": {
+                        "severity": "unknown",
+                        "incident_type": "unknown",
+                        "escalation_team": "unknown",
+                    },
+                }
+            )
+
+    return build_risk_summary(analyses)
 
 
 @app.get("/correlation/{incident_id}")
