@@ -10,7 +10,7 @@ from pipeline import run_analysis_pipeline, run_correlation_context
 from prometheus_adapter import convert_alert_to_incident
 from risk_engine import build_risk_summary
 
-DATASET_PATH = "dataset_v2.json"
+DATASET_PATH = "dataset_v3.json"
 
 app = FastAPI(
     title="AI Factory Operations Copilot",

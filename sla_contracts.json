@@ -1,0 +1,19 @@
+{
+    "gold": {
+      "availability_target": "99.95%",
+      "breach_window_minutes": 30,
+      "critical_response_minutes": 15,
+      "allowed_automation": [
+        "pause_non_critical_workloads",
+        "migrate_workloads",
+        "notify_operations"
+      ],
+      "restricted_automation": [
+        "restart_ups",
+        "restart_cdu",
+        "switch_power_feed",
+        "open_valve"
+      ],
+      "human_validation_required": true
+    }
+  }

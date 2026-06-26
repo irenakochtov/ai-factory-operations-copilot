@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pipeline import run_analysis_pipeline
 
-DATASET_PATH = "dataset_v2.json"
+DATASET_PATH = "dataset_v3.json"
 REPORT_PATH = "results/eval_report.json"
 
 
