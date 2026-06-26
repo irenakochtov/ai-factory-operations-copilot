@@ -1,5 +1,6 @@
 from collections import Counter
 
+from commander_agent import generate_executive_commander_report
 from pipeline import run_analysis_pipeline
 
 
@@ -210,7 +211,7 @@ def generate_incident_commander_report(incidents: list) -> dict:
         primary_operational_risk=primary_operational_risk,
     )
 
-    return {
+    commander_context = {
         "site_status": site_status,
         "incident_count": len(analyses),
         "highest_priority_incident": highest_priority["incident_id"],
@@ -223,4 +224,13 @@ def generate_incident_commander_report(incidents: list) -> dict:
         "commander_decision": commander_decision,
         "response_plan": response_plan,
         "incident_reports": analyses,
+    }
+
+    executive_agent_report = generate_executive_commander_report(
+        commander_context
+    )
+
+    return {
+        **commander_context,
+        "executive_agent_report": executive_agent_report,
     }
