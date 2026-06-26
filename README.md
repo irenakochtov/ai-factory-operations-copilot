@@ -1,323 +1,464 @@
 # AI Factory Operations Copilot
 
-AI-powered incident triage and operational decision support system for AI factories, GPU clusters, and modern data center environments.
+## AI-Powered Operational Intelligence for AI Factories
+
+AI Factory Operations Copilot is an AI-powered operations copilot designed for modern AI factories, GPU clusters, and mission-critical data center environments.
+
+The platform transforms raw infrastructure alerts into actionable operational intelligence by combining deterministic classification, AI-powered reasoning, failure prediction, risk assessment, and multi-incident correlation.
+
+Instead of reacting to hundreds of disconnected alerts, operators receive a single operational assessment with root cause analysis, risk scoring, failure forecasting, and recommended actions.
+
+Built entirely on Nebius AI and Serverless infrastructure.
 
 ---
 
-## Overview
+# Why AI Factories?
 
-Modern AI factories generate thousands of alerts across multiple operational domains:
+AI factories are fundamentally different from traditional data centers.
 
+Large GPU clusters depend on tightly coupled cooling systems, power infrastructure, network fabrics, and storage platforms.
+
+A single cooling issue can rapidly impact:
+
+- GPU utilization
+- AI training jobs
+- Inference workloads
+- Service availability
+- Business outcomes
+
+Traditional monitoring platforms generate alerts.
+
+Operations teams still need to answer:
+
+- What is actually happening?
+- Which alerts are related?
+- What is the root cause?
+- Who should respond?
+- What will fail next?
+- What is the overall site risk?
+
+AI Factory Operations Copilot was built to answer those questions automatically.
+
+---
+
+# The Problem
+
+Modern AI infrastructure generates alerts from multiple operational domains:
+
+- Building Management Systems (BMS)
+- Data Center Infrastructure Management (DCIM)
+- NVIDIA DCGM
+- Prometheus
+- Network Monitoring
+- Storage Monitoring
+
+These alerts often arrive independently, making incident investigation slow and reactive.
+
+Operations teams spend valuable time correlating signals manually before they can begin remediation.
+
+---
+
+# The Solution
+
+AI Factory Operations Copilot converts infrastructure alerts into operational intelligence.
+
+The platform automatically:
+
+- Correlates operational events
+- Classifies incidents
+- Identifies probable root causes
+- Recommends corrective actions
+- Forecasts future failures
+- Simulates failure propagation
+- Calculates site-wide risk
+- Detects related incident clusters
+
+The result is faster incident response, improved operational awareness, and reduced mean time to resolution (MTTR).
+
+---
+
+# Example Scenario
+
+## Input Alert
+
+GPU-07 temperature reaches 92°C.
+
+## AI Factory Operations Copilot
+
+The platform automatically:
+
+- Identifies a cooling risk
+- Correlates rack-level signals
+- Determines the likely root cause
+- Predicts GPU throttling within 15 minutes
+- Predicts GPU shutdown within 30 minutes
+- Calculates site-wide risk impact
+- Recommends workload migration
+- Escalates the incident to Facilities
+
+Instead of a raw alert, operators receive an actionable operational assessment.
+
+---
+
+# Architecture
+
+## Data Sources
+
+- Prometheus Alerts
 - BMS
 - DCIM
-- GPU telemetry
-- InfiniBand networks
-- Power systems
-- Cooling systems
-- Environmental monitoring
-- Workload orchestration platforms
+- NVIDIA DCGM
+- Network Telemetry
+- Storage Telemetry
 
-Operators often receive alerts from multiple systems without understanding:
+## Processing Pipeline
 
-- What is the real root cause?
-- Which alerts are symptoms?
-- Which team should respond?
-- What will fail next?
-- What action should be taken immediately?
+1. Alert Ingestion
+2. Incident Normalization
+3. Correlation Engine
+4. Deterministic Classification Engine
+5. LLM Analysis
+6. Validation Layer
+7. Failure Forecast Engine
+8. Failure Cascade Simulation
+9. Risk Summary Engine
+10. Incident Clustering Engine
 
-This project demonstrates an AI Operations Copilot capable of analyzing multi-source infrastructure incidents and generating structured operational recommendations.
+## Outputs
 
----
-
-## Project Goals
-
-The goal of this project is to build a working prototype of an AI Factory Operations Copilot.
-
-The system helps NOC and data center operations teams analyze multi-source infrastructure incidents from AI factories and GPU data centers.
-
-The prototype focuses on:
-
-- Correlating alerts from multiple operational domains
-- Identifying likely root cause
-- Predicting the next possible failure
-- Estimating severity and time to critical impact
-- Recommending first operational actions
-- Routing incidents to the correct escalation team
-- Evaluating model predictions against ground truth
-
-The MVP is designed to demonstrate operational intelligence, not full production monitoring.
+- Root Cause Analysis
+- Severity Classification
+- Escalation Team Recommendation
+- Operational Recommendations
+- Business Impact Assessment
+- Failure Forecast Timeline
+- Failure Cascade Simulation
+- Site Risk Score
+- Incident Clusters
 
 ---
 
-## Target Users
+# Built on Nebius
 
-Primary users:
+This project uses multiple Nebius services to provide scalable AI-powered operational intelligence.
 
-- NOC Engineers
-- Data Center Operations Engineers
-- Critical Facilities Engineers
-- AI Infrastructure Engineers
-- SRE Teams
-- Platform Operations Teams
+## Nebius Token Factory
 
----
+Provides secure access to foundation models hosted on Nebius AI infrastructure.
 
-## MVP Scope
+Used for:
 
-Current MVP capabilities:
+- Root Cause Analysis
+- Executive Incident Summaries
+- Business Impact Assessment
+- Operational Recommendations
+- Failure Prediction
 
-✅ Synthetic AI Factory incident dataset
+## Nebius Serverless Endpoint
 
-✅ Multi-source incident analysis
+Hosts the production FastAPI inference service.
 
-✅ AI-powered root cause identification
+Provides:
 
-✅ Severity classification
+- Serverless API deployment
+- Automatic scaling
+- Managed inference infrastructure
 
-✅ Escalation team recommendation
+## Nebius Serverless Job
 
-✅ Operational action recommendation
+Runs automated evaluation and validation workflows.
 
-✅ Business impact assessment
+Used for:
 
-✅ Predicted next failure
+- Model evaluation
+- Accuracy testing
+- Validation reporting
 
-✅ Asset history support
+## Nebius Container Registry
 
-✅ Evaluation framework
+Stores and distributes production container images.
 
-✅ FastAPI service
+Used for:
 
-✅ Swagger API documentation
-
----
-
-## Technology Stack
-
-### AI Layer
-
-- Nebius Token Factory
-- Qwen3-30B-A3B-Instruct-2507
-- OpenAI Compatible API
-
-### Backend
-
-- Python 3
-- FastAPI
-- Uvicorn
-
-### Data
-
-- JSON datasets
-- Synthetic incident scenarios
-- Asset history context
-
-### Evaluation
-
-- Ground truth validation
-- Accuracy measurement
-- Classification scoring
+- Docker image storage
+- Versioned deployments
+- Serverless endpoint updates
 
 ---
 
-## Architecture
+# Core Features
+
+## Incident Intelligence
+
+Transforms infrastructure alerts into structured operational incidents.
+
+---
+
+## Root Cause Analysis
+
+Identifies the most likely cause of operational failures and infrastructure degradation.
+
+Example:
 
 ```text
-dataset_v2.json
-       +
-asset_history.json
-       |
-       v
-FastAPI Service
-       |
-       v
-Incident Loader
-       |
-       v
-AI Factory Operations Copilot
-       |
-       v
-Qwen3-30B-A3B
-       |
-       v
-Structured Incident Analysis
-       |
-       v
-Operational Recommendation
+Cooling failure detected in Rack D11.
+
+Root Cause:
+Low coolant flow in CDU BMS-08 causing rack thermal imbalance and GPU overheating.
 ```
 
 ---
 
-## Project Structure
+## Failure Forecast
+
+Predicts likely operational impact over:
+
+- 15 Minutes
+- 30 Minutes
+- 60 Minutes
+
+Example:
 
 ```text
-serverlessv2/
+15 Minutes:
+GPU thermal throttling may begin
 
-├── api.py
-├── copilot.py
-├── evaluate.py
-├── dataset_v2.json
-├── asset_history.json
-├── requirements.txt
-├── PRODUCT_ARCHITECTURE.md
-├── README_dataset_v2.md
-├── README.md
-├── results/
-└── .env
+30 Minutes:
+Affected GPU nodes may reach shutdown threshold
+
+60 Minutes:
+Rack-level workload disruption may occur
 ```
 
 ---
 
-## API Endpoints
+## Failure Cascade Simulation
 
-### Health Check
+Predicts how incidents may propagate through AI infrastructure.
+
+Example:
+
+```text
+GPU Overheating
+      ↓
+GPU Throttling
+      ↓
+GPU Shutdown
+      ↓
+Training Failure
+      ↓
+SLA Violation
+```
+
+---
+
+## Risk Summary
+
+Provides site-wide operational visibility.
+
+Example:
+
+```text
+Risk Score: 96
+Critical Incidents: 5
+Top Risk Domain: Network
+```
+
+---
+
+## Incident Clustering
+
+Groups related incidents and identifies probable common causes.
+
+Example:
+
+```text
+Cooling Risk
+
+INC-0003
+INC-0008
+INC-0010
+
+Confidence: 85%
+```
+
+---
+
+# API Endpoints
+
+## Incident Analysis
 
 ```http
-GET /
+POST /analyze_alert
+
+POST /analyze/{incident_id}
 ```
 
-Returns service status.
+Analyzes incidents and generates operational intelligence.
 
 ---
 
-### List Incidents
+## Correlation
+
+```http
+GET /correlation/{incident_id}
+```
+
+Returns correlated operational context for an incident.
+
+---
+
+## Risk Assessment
+
+```http
+GET /risk_summary
+```
+
+Provides site-wide operational risk visibility.
+
+---
+
+## Incident Clustering
+
+```http
+GET /incident_clusters
+```
+
+Groups related incidents and identifies common causes.
+
+---
+
+## Dataset Exploration
 
 ```http
 GET /incidents
 ```
 
-Returns available incidents from the dataset.
+Lists available demo incidents.
 
 ---
 
-### Analyze Incident
+# Evaluation Results
 
-```http
-POST /analyze/{incident_id}
+The platform includes an automated evaluation framework.
+
+## Evaluation Metrics
+
+- Severity Accuracy
+- Incident Type Accuracy
+- Escalation Team Accuracy
+
+## Current Evaluation
+
+```text
+Total Incidents: 10
+
+Severity Accuracy: 100%
+Incident Type Accuracy: 100%
+Escalation Team Accuracy: 100%
+
+Overall Accuracy: 100%
 ```
 
-Example:
+Evaluation reports are automatically generated and stored during validation runs.
 
-```bash
-curl -X POST http://127.0.0.1:8000/analyze/INC-0016
+---
+
+# Results
+
+The platform successfully demonstrates:
+
+- Incident Correlation
+- Root Cause Analysis
+- Failure Forecasting
+- Failure Cascade Simulation
+- Site-Wide Risk Scoring
+- Incident Clustering
+- Operational Recommendations
+- Production API Deployment on Nebius Serverless
+
+---
+
+# Repository Structure
+
+```text
+api.py
+pipeline.py
+classification_engine.py
+correlation_engine.py
+forecast_engine.py
+cascade_engine.py
+risk_engine.py
+cluster_engine.py
+validation_engine.py
+evaluate.py
+dataset_v2.json
 ```
 
 ---
 
-## Example Output
+# Running Locally
 
-```json
-{
-  "incident_type": "network_risk",
-  "severity": "high",
-  "root_cause": "InfiniBand fabric packet loss causing NCCL communication slowdown",
-  "affected_systems": [
-    "InfiniBand network fabric",
-    "GPU cluster",
-    "Distributed AI training workloads"
-  ],
-  "escalation_team": "Network",
-  "recommended_action": "Inspect affected InfiniBand switch ports",
-  "priority_score": 80,
-  "confidence_score": 95,
-  "time_to_critical_minutes": 30
-}
-```
-
----
-
-## Evaluation
-
-Run evaluation:
-
-```bash
-python3 evaluate.py
-```
-
-Current baseline results:
-
-- Severity Accuracy: 80%
-- Incident Type Accuracy: 100%
-- Escalation Team Accuracy: 100%
-- Overall Accuracy: 93.33%
-
----
-
-## Installation
-
-Create virtual environment:
+## Create Virtual Environment
 
 ```bash
 python3 -m venv .venv
-```
-
-Activate environment:
-
-```bash
 source .venv/bin/activate
 ```
 
-Install dependencies:
+## Install Dependencies
 
 ```bash
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
----
-
-## Running The API
-
-Start FastAPI:
+## Start API
 
 ```bash
-python -m uvicorn api:app --reload
+python api.py
 ```
 
 Swagger UI:
 
 ```text
-http://127.0.0.1:8000/docs
-```
-
-OpenAPI Schema:
-
-```text
-http://127.0.0.1:8000/openapi.json
+http://localhost:8000/docs
 ```
 
 ---
 
-## Current Project Status
+# Docker Deployment
 
-### Completed
+## Build Image
 
-- Dataset generation
-- Ground truth labels
-- AI Copilot implementation
-- FastAPI integration
-- Swagger documentation
-- Evaluation framework
-- Asset history support
+```bash
+docker build -t ai-factory-copilot .
+```
 
-### Planned
+## Run Container
 
-- Correlation Engine
-- Historical context analysis
-- Risk scoring engine
-- Business impact engine
-- Timeline reconstruction
-- Prometheus integration
-- DCGM integration
-- Grafana dashboard
-- ServiceNow integration
+```bash
+docker run -p 8000:8000 ai-factory-copilot
+```
 
 ---
 
-## Disclaimer
+# Future Enhancements
 
-This project is a proof-of-concept prototype developed for AI Factory Operations and AI Infrastructure research and demonstration purposes.
+- Real-Time Prometheus Integration
+- Historical Incident Learning
+- Automated Remediation Workflows
+- Multi-Site Correlation
+- Live Operations Dashboard
+- Agent-Based Incident Investigation
+- Predictive Capacity Planning
 
-It is not intended for direct production deployment without additional validation, security controls, observability, and operational testing.
+---
+
+# Built For
+
+**Nebius Serverless AI Builders Challenge 2026**
+
+AI-powered operational intelligence for the next generation of AI factories.
 
 ---
 
@@ -325,4 +466,6 @@ It is not intended for direct production deployment without additional validatio
 
 Irena Kochtov
 
-Nebius Academy – AI Performance Engineering
+Infrastructure • Data Center Operations • Cloud • AI Infrastructure
+
+AWS Solutions Architect | Nebius AI Performance Engineering

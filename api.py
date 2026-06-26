@@ -15,7 +15,7 @@ DATASET_PATH = "dataset_v2.json"
 app = FastAPI(
     title="AI Factory Operations Copilot",
     description="AI-powered incident triage API for AI factories and data center operations.",
-    version="0.7.1",
+    version="0.8.0",
 )
 
 
@@ -33,6 +33,13 @@ class PrometheusAlert(BaseModel):
     packet_loss_pct: Optional[float] = Field(None, examples=[1.8])
     p99_latency_ms: Optional[float] = Field(None, examples=[240])
     threshold: float = Field(..., examples=[85])
+
+
+class IncidentCommanderRequest(BaseModel):
+    incident_ids: list[str] = Field(
+        ...,
+        examples=[["INC-0001", "INC-0005", "INC-0045"]],
+    )
 
 
 def load_dataset():
@@ -86,7 +93,7 @@ def health_check():
     return {
         "status": "ok",
         "service": "AI Factory Operations Copilot",
-        "version": "0.7.1",
+        "version": "0.8.0",
     }
 
 
@@ -159,6 +166,24 @@ def get_incident_clusters(max_incidents: int = 10):
             continue
 
     return build_incident_clusters(analyses)
+
+
+@app.post("/incident_commander")
+def incident_commander(request: IncidentCommanderRequest):
+    if not request.incident_ids:
+        raise HTTPException(
+            status_code=422,
+            detail="incident_ids must contain at least one incident ID",
+        )
+
+    incidents = []
+
+    for incident_id in request.incident_ids:
+        incidents.append(find_incident_by_id(incident_id))
+
+    from commander_engine import generate_incident_commander_report
+
+    return generate_incident_commander_report(incidents)
 
 
 @app.get("/correlation/{incident_id}")
