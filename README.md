@@ -1,471 +1,369 @@
 # AI Factory Operations Copilot
 
-## AI-Powered Operational Intelligence for AI Factories
-
-AI Factory Operations Copilot is an AI-powered operations copilot designed for modern AI factories, GPU clusters, and mission-critical data center environments.
-
-The platform transforms raw infrastructure alerts into actionable operational intelligence by combining deterministic classification, AI-powered reasoning, failure prediction, risk assessment, and multi-incident correlation.
-
-Instead of reacting to hundreds of disconnected alerts, operators receive a single operational assessment with root cause analysis, risk scoring, failure forecasting, and recommended actions.
-
-Built entirely on Nebius AI and Serverless infrastructure.
+The **AI Factory Operations Copilot** is an incident triage and decision-support system for hyperscale AI data centers. It ingests multi-source operational signals (BMS, DCIM, GPU telemetry, network, power, cooling, storage, workload, environmental, and security events), classifies each incident deterministically, routes it to a domain-specialized LLM agent for root-cause and impact analysis, and coordinates everything through an executive **Incident Commander** agent. It is built to run on **Nebius Serverless AI** and pairs deterministic engines with LLM reasoning so that operators get explainable, safety-aware recommendations rather than opaque model output.
 
 ---
 
-# Why AI Factories?
+## Key Capabilities
 
-AI factories are fundamentally different from traditional data centers.
-
-Large GPU clusters depend on tightly coupled cooling systems, power infrastructure, network fabrics, and storage platforms.
-
-A single cooling issue can rapidly impact:
-
-- GPU utilization
-- AI training jobs
-- Inference workloads
-- Service availability
-- Business outcomes
-
-Traditional monitoring platforms generate alerts.
-
-Operations teams still need to answer:
-
-- What is actually happening?
-- Which alerts are related?
-- What is the root cause?
-- Who should respond?
-- What will fail next?
-- What is the overall site risk?
-
-AI Factory Operations Copilot was built to answer those questions automatically.
+| Capability | Status | Description |
+|---|---|---|
+| Domain-Routed AI Agents | ✅ | Incidents are routed by `incident_type` to a specialized agent prompt (cooling, power, network, security, storage, environmental, hardware, or generalist). |
+| Executive Incident Commander | ✅ | Aggregates multiple analyzed incidents into a single executive situation report with prioritized response actions. |
+| SLA-Aware Decision Support | ✅ | Maps incidents to customer SLA tiers, computes an SLA countdown clock, and surfaces breach risk. |
+| Deterministic Incident Classification | ✅ | Rule-based classification of `incident_type`, `escalation_team`, and a severity cap before any LLM call. |
+| Root Cause Analysis | ✅ | LLM-generated root cause, event propagation path, and affected systems. |
+| Failure Forecasting | ✅ | Deterministic 15 / 30 / 60-minute forward risk timeline per incident type. |
+| Failure Cascade Prediction | ✅ | Ordered cascade chain describing how an incident is likely to propagate. |
+| Safe Automation Guardrails | ✅ | Explicit safe vs. restricted automation actions and human-validation requirements. |
+| Running on Nebius Serverless AI | ✅ | LLM inference served via the Nebius OpenAI-compatible endpoint; deployable as a serverless container. |
 
 ---
 
-# The Problem
+## The Problem
 
-Modern AI infrastructure generates alerts from multiple operational domains:
+A modern AI factory is not a single system. It is a tightly coupled stack of physical and digital infrastructure where a failure in one layer cascades into the others:
 
-- Building Management Systems (BMS)
-- Data Center Infrastructure Management (DCIM)
-- NVIDIA DCGM
-- Prometheus
-- Network Monitoring
-- Storage Monitoring
+- **BMS** (Building Management System) governs facility-level cooling, airflow, and environmental controls.
+- **DCIM** (Data Center Infrastructure Management) tracks rack-level power, thermal, and capacity signals.
+- **GPU clusters** run at high density and are extremely sensitive to thermal and power fluctuations.
+- **AI workloads** (distributed training and inference) depend on every layer below them staying healthy.
+- **Power** systems (UPS, PDU, feeds) protect against utility instability but degrade over time.
+- **Cooling** systems (CDU, CRAC/CRAH, coolant loops) keep GPUs below throttling thresholds.
+- **Security** systems monitor physical access and containment, which directly affect airflow.
 
-These alerts often arrive independently, making incident investigation slow and reactive.
+Incident response is difficult because:
 
-Operations teams spend valuable time correlating signals manually before they can begin remediation.
-
----
-
-# The Solution
-
-AI Factory Operations Copilot converts infrastructure alerts into operational intelligence.
-
-The platform automatically:
-
-- Correlates operational events
-- Classifies incidents
-- Identifies probable root causes
-- Recommends corrective actions
-- Forecasts future failures
-- Simulates failure propagation
-- Calculates site-wide risk
-- Detects related incident clusters
-
-The result is faster incident response, improved operational awareness, and reduced mean time to resolution (MTTR).
+- **Signals are fragmented** across many monitoring systems with different formats and thresholds.
+- **Failures cascade across domains** — a cooling fault becomes a GPU throttling event becomes a missed training deadline.
+- **Time-to-critical is short** — thermal and power incidents can reach critical state in minutes.
+- **Routing is ambiguous** — operators must decide quickly whether Facilities, Network, Platform, or Operations owns the response.
+- **Automation is dangerous** — blindly automating physical remediation (restarting a UPS, opening a valve) can cause real-world damage.
 
 ---
 
-# Example Scenario
+## Solution Overview
 
-## Input Alert
+This project combines **deterministic reasoning** with **LLM agents** so that each part of the system does what it is best at.
 
-GPU-07 temperature reaches 92°C.
+- **Deterministic engines** handle everything that must be reliable, explainable, and cheap: classification, correlation, severity capping, forecasting, cascade modeling, similarity lookup, and SLA assessment. These never depend on model output for routing decisions.
+- **LLM domain agents** handle everything that benefits from reasoning over context: root-cause analysis, business-impact assessment, operational recommendations, and predicted next failure.
+- A **validation layer** enforces the deterministic classification over the LLM response, guaranteeing that `incident_type` and `escalation_team` remain trustworthy and that severity never exceeds its cap.
 
-## AI Factory Operations Copilot
-
-The platform automatically:
-
-- Identifies a cooling risk
-- Correlates rack-level signals
-- Determines the likely root cause
-- Predicts GPU throttling within 15 minutes
-- Predicts GPU shutdown within 30 minutes
-- Calculates site-wide risk impact
-- Recommends workload migration
-- Escalates the incident to Facilities
-
-Instead of a raw alert, operators receive an actionable operational assessment.
+The result is a system where the LLM adds narrative and judgment, but the operational guarantees come from deterministic code.
 
 ---
 
-# Architecture
+## System Architecture
 
-## Data Sources
+The per-incident analysis pipeline (`pipeline.py`) runs deterministic preprocessing and classification first, calls exactly one routed domain agent, then enriches the result with deterministic forecasting, cascade, history, and SLA layers:
 
-- Prometheus Alerts
-- BMS
-- DCIM
-- NVIDIA DCGM
-- Network Telemetry
-- Storage Telemetry
+![AI Factory Operations Copilot architecture](docs/architecture.svg)
 
-## Processing Pipeline
+A text view of the same pipeline:
 
-1. Alert Ingestion
-2. Incident Normalization
-3. Correlation Engine
-4. Deterministic Classification Engine
-5. LLM Analysis
-6. Validation Layer
-7. Failure Forecast Engine
-8. Failure Cascade Simulation
-9. Risk Summary Engine
-10. Incident Clustering Engine
-
-## Outputs
-
-- Root Cause Analysis
-- Severity Classification
-- Escalation Team Recommendation
-- Operational Recommendations
-- Business Impact Assessment
-- Failure Forecast Timeline
-- Failure Cascade Simulation
-- Site Risk Score
-- Incident Clusters
-
----
-
-# Built on Nebius
-
-This project uses multiple Nebius services to provide scalable AI-powered operational intelligence.
-
-## Nebius Token Factory
-
-Provides secure access to foundation models hosted on Nebius AI infrastructure.
-
-Used for:
-
-- Root Cause Analysis
-- Executive Incident Summaries
-- Business Impact Assessment
-- Operational Recommendations
-- Failure Prediction
-
-## Nebius Serverless Endpoint
-
-Hosts the production FastAPI inference service.
-
-Provides:
-
-- Serverless API deployment
-- Automatic scaling
-- Managed inference infrastructure
-
-## Nebius Serverless Job
-
-Runs automated evaluation and validation workflows.
-
-Used for:
-
-- Model evaluation
-- Accuracy testing
-- Validation reporting
-
-## Nebius Container Registry
-
-Stores and distributes production container images.
-
-Used for:
-
-- Docker image storage
-- Versioned deployments
-- Serverless endpoint updates
-
----
-
-# Core Features
-
-## Incident Intelligence
-
-Transforms infrastructure alerts into structured operational incidents.
-
----
-
-## Root Cause Analysis
-
-Identifies the most likely cause of operational failures and infrastructure degradation.
-
-Example:
-
-```text
-Cooling failure detected in Rack D11.
-
-Root Cause:
-Low coolant flow in CDU BMS-08 causing rack thermal imbalance and GPU overheating.
+```
+                          Dataset v3 (or live alert)
+                                    |
+                                    v
+                          Incident Preprocessor        (strips labels for inference)
+                                    |
+                                    v
+                          Correlation Engine           (compact multi-source context)
+                                    |
+                                    v
+                          Classification Engine        (incident_type, team, severity cap)
+                                    |
+                                    v
+                          Domain Agent Router          (selects specialist by incident_type)
+                                    |
+            +-----------+-----------+-----------+-----------+-----------+
+            v           v           v           v           v           v
+        Cooling      Power      Security     Network     Storage /    General
+         Agent       Agent       Agent        Agent     Env / HW      Agent
+            +-----------+-----------+-----------+-----------+-----------+
+                                    |
+                                    v
+                          Validation Engine            (enforces deterministic classification)
+                                    |
+                                    v
+                          Forecast Engine              (15 / 30 / 60-min risk timeline)
+                                    |
+                                    v
+                          Cascade Engine               (failure propagation chain)
+                                    |
+                                    v
+                          Incident History Engine      (similar past incidents)
+                                    |
+                                    v
+                          SLA Engine                   (tier, SLA clock, automation policy)
+                                    |
+                                    v
+                          Analyzed Incident
+                                    |
+                                    v
+                          Commander Agent              (multi-incident coordination)
+                                    |
+                                    v
+                          Executive Report
 ```
 
+Two additional deterministic engines operate at the **fleet level** rather than per incident, and are exposed directly through the API:
+
+- **Risk Engine** (`risk_engine.py`) — aggregates analyzed incidents into a site risk summary (`/risk_summary`).
+- **Cluster Engine** (`cluster_engine.py`) — groups incidents by suspected common cause (`/incident_clusters`).
+
 ---
 
-## Failure Forecast
+## AI Domain Agents
 
-Predicts likely operational impact over:
+Incidents are routed **deterministically**. The Classification Engine assigns an `incident_type`, and the Domain Agent Router (`agent_router.py`) uses that value to look up a specialized system prompt in the Agent Registry (`agent_registry.py`). The selected prompt is sent to the shared LLM runner (`llm_client.py`) together with a user prompt that carries the exact response schema and rules.
 
-- 15 Minutes
-- 30 Minutes
-- 60 Minutes
+### Implemented agents
 
-Example:
+| Agent | Routed Incident Type | Diagnostic Focus |
+|---|---|---|
+| Cooling Agent | `cooling_risk` | CDU/CRAH/CRAC behavior, coolant flow and pressure, rack inlet temperature, hot-aisle containment, GPU thermal throttling cascade. |
+| Power Agent | `power_risk` | UPS runtime and battery health, PDU load, power feeds and redundancy, shutdown risk during utility instability. |
+| Security Agent | `security_risk` | Physical access events, containment doors, badge/access control, and secondary airflow effects. |
+| Network Agent | `network_risk` | InfiniBand/Ethernet fabric health, packet loss, optics, congestion, NCCL collective latency, training step time. |
+| Storage Agent | `storage_risk` | Storage/filesystem latency (p99), IO queue depth, throughput, NVMe/controller health, checkpoint impact. |
+| Environmental Agent | `environmental_risk` | Room-level humidity and temperature drift versus operating envelope and escalation risk. |
+| Hardware Agent | `hardware_risk` | GPU/server hardware faults, ECC, NVLink, node-level degradation, and workload stability. |
+| General Agent | fallback | Used when the incident type is unknown or unmapped; preserves the original generalist behavior. |
 
-```text
-15 Minutes:
-GPU thermal throttling may begin
+Every agent shares one core system prompt and one response schema, so all agents return an **identical JSON structure**. Only the domain specialization differs.
 
-30 Minutes:
-Affected GPU nodes may reach shutdown threshold
+### Why routing instead of broadcasting
 
-60 Minutes:
-Rack-level workload disruption may occur
+- **Cost and latency** — one LLM call per incident instead of fanning out to every domain agent.
+- **Determinism** — routing decisions come from rule-based classification, not from model output.
+- **Consistency** — a single source of truth for `incident_type` and `escalation_team`, enforced after inference.
+- **Maintainability** — agents are configuration (prompts) rather than parallel code paths, so adding a domain is a registry entry, not new orchestration.
+
+---
+
+## SLA Engine
+
+The SLA Engine (`sla_engine.py`) ties each incident to its business and contractual context.
+
+- **SLA contracts** — Customer tiers (`gold`, `silver`, `bronze`, `standard`) map to availability targets and automation policy in `sla_contracts.json`. Tier is read from the incident's `business_context.customer_tier`, falling back to `standard`.
+- **SLA countdown** — An `sla_clock` reports `status`, `minutes_remaining`, and a `breach_state` (`monitoring` → `at_risk` → `warning` → `critical`) derived from time-to-critical and priority score.
+- **Human validation** — Contracts can require human field validation before any physical remediation; this is surfaced as `human_validation_required`.
+- **Safe automation** — Low-risk actions that may be automated, such as `pause_non_critical_workloads`, `migrate_workloads`, and `notify_operations`.
+- **Restricted automation** — High-risk physical actions that must not be automated, such as `restart_ups`, `restart_cdu`, `switch_power_feed`, and `open_valve`.
+
+The SLA assessment is attached to every analyzed incident as `sla_assessment`.
+
+---
+
+## Executive Incident Commander
+
+The Incident Commander turns a set of individually analyzed incidents into a single, leadership-ready operational picture. It is implemented as a deterministic aggregation layer (`commander_engine.py`) feeding an LLM commander agent (`commander_agent.py`).
+
+**Responsibilities**
+
+- **Executive summaries** — Produces an executive briefing, an overall site status (`stable` / `elevated` / `high_risk` / `critical`), the primary operational risk, and a one-paragraph message for NOC or operations leadership.
+- **Multi-incident coordination** — Computes site status from the distribution of severities, identifies the highest-priority incident, collects affected domains and recommended teams, determines the minimum time-to-critical across incidents, and builds a prioritized response plan.
+- **Automation approval** — Returns a structured `automation_recommendation` (approved action plus rationale) and an explicit `human_validation_required` flag. It is constrained to never approve automated physical remediation for power, cooling, or security systems, and to require human field validation when power or cooling risk is critical.
+
+The deterministic context (site status, response plan, priorities) is computed in code first, then passed to the LLM so the executive report is grounded in the same numbers operators see.
+
+---
+
+## Business Impact and SLA Awareness
+
+Incidents in an AI factory are not equal, and neither is their business consequence. This project prioritizes incidents using **both technical severity and business context**, so that two thermally similar events can still be triaged differently based on who they affect. Each incident in `dataset_v3.json` carries a synthetic `business_context` block — including a `customer_tier` (`gold`, `silver`, `bronze`, `standard`) — that demonstrates how operational prioritization would work against real customer commitments. Customer tier maps directly to an SLA target (for example, `gold` to `99.95%`), and the SLA Engine combines that target with the incident's time-to-critical and priority to produce an **SLA countdown clock** showing how much response time remains before customer impact.
+
+This business signal flows through the rest of the system. The Commander Agent uses SLA state and priority to order multi-incident response, so the highest-business-risk incidents surface first in the executive report. All monetary figures (such as revenue-impact values) are **synthetic demonstration values only and are not real financial calculations**; they exist to illustrate prioritization, not to model actual cost.
+
+Business awareness never overrides safety. **Safe automation is limited to workload-level actions** — migrating workloads, pausing non-critical jobs, and notifying operators. **Any physical remediation — UPS, CDU, valves, power feeds, or cooling equipment — always requires human validation** and is explicitly listed as a restricted action. The system is designed to accelerate human decision-making under SLA pressure, not to take unsupervised physical action.
+
+---
+
+## Repository Structure
+
+```
+serverlessv2/
+├── api.py                       # FastAPI app and HTTP endpoints
+├── pipeline.py                  # Per-incident analysis pipeline orchestration
+│
+├── llm_client.py                # Shared Nebius/OpenAI-compatible LLM runner + JSON parsing
+├── copilot.py                   # Operational Copilot entrypoint (delegates to the router)
+├── agent_router.py              # Deterministic domain-agent router
+├── agent_registry.py            # incident_type -> specialized prompt mapping
+├── agent_prompts.py             # Core + per-domain system prompts, schema, and rules
+│
+├── classification_engine.py     # Deterministic incident classification
+├── correlation_engine.py        # Multi-source correlation context
+├── validation_engine.py         # Enforces deterministic classification + severity cap
+├── forecast_engine.py           # 15/30/60-minute failure forecast
+├── cascade_engine.py            # Failure cascade chains
+├── incident_history_engine.py   # Similar historical incidents
+├── sla_engine.py                # SLA tier, clock, and automation policy
+├── risk_engine.py               # Fleet-level risk summary
+├── cluster_engine.py            # Incident clustering by common cause
+├── rules_engine.py              # Supplementary operational rules
+│
+├── commander_engine.py          # Multi-incident aggregation for the commander
+├── commander_agent.py           # Executive Incident Commander LLM agent
+│
+├── prometheus_adapter.py        # Converts Prometheus-style alerts into incidents
+├── incident_preprocessor.py     # Strips labels before inference
+│
+├── evaluate.py                  # Deterministic evaluation harness
+├── generate_dataset_v3.py       # Builds dataset_v3.json from the base v2 dataset
+│
+├── dataset_v3.json              # Active enriched incident dataset (business/SLA/metrics)
+├── sla_contracts.json           # SLA tier definitions
+├── asset_history.json           # Historical asset context for correlation
+├── sample_prometheus_alerts.json# Example Prometheus alerts
+│
+├── Dockerfile                   # Production container image
+├── .dockerignore
+├── requirements.txt
+├── PRODUCT_ARCHITECTURE.md
+├── README.md
+│
+├── docs/
+│   └── architecture.svg         # System architecture diagram
+│
+├── evidence/                    # Screenshots and demo artifacts
+│
+└── archive/                     # Superseded artifacts kept for provenance (not used at runtime)
+    ├── dataset_v2.json          # Base synthetic incident dataset (v2)
+    ├── serverless_v2_dataset.json
+    ├── generate_dataset_v2.py   # Builds the base v2 dataset
+    ├── README_dataset_v2.md
+    ├── demo.py
+    └── evidence/                # Earlier evidence screenshots
 ```
 
----
+> Note: `generate_dataset_v3.py` was the one-time build script used to produce `dataset_v3.json` from the base v2 dataset (now in `archive/`). The committed `dataset_v3.json` is the active dataset and the script does not need to be re-run for normal use.
 
-## Failure Cascade Simulation
+### API Endpoints
 
-Predicts how incidents may propagate through AI infrastructure.
-
-Example:
-
-```text
-GPU Overheating
-      ↓
-GPU Throttling
-      ↓
-GPU Shutdown
-      ↓
-Training Failure
-      ↓
-SLA Violation
-```
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | Health check. |
+| `GET` | `/debug-env` | Report which Nebius environment variables are configured (booleans and non-secret values only). |
+| `GET` | `/incidents` | List incidents in the active dataset. |
+| `POST` | `/analyze/{incident_id}` | Run the full pipeline on a single incident. |
+| `POST` | `/analyze_alert` | Convert a Prometheus-style alert into an incident and analyze it. |
+| `GET` | `/correlation/{incident_id}` | Return the correlation context for an incident. |
+| `GET` | `/risk_summary` | Fleet-level risk summary across incidents. |
+| `GET` | `/incident_clusters` | Group incidents by suspected common cause. |
+| `POST` | `/incident_commander` | Generate an executive report for a set of incident IDs. |
 
 ---
 
-## Risk Summary
+## Evaluation
 
-Provides site-wide operational visibility.
+Evaluation is **deterministic and label-based** (`evaluate.py`). For each incident, the harness strips ground-truth labels, runs the full analysis pipeline, and compares the prediction against ground truth on three fields: `severity`, `incident_type`, and `escalation_team`. Results are written to `results/eval_report.json`.
 
-Example:
-
-```text
-Risk Score: 96
-Critical Incidents: 5
-Top Risk Domain: Network
-```
-
----
-
-## Incident Clustering
-
-Groups related incidents and identifies probable common causes.
-
-Example:
-
-```text
-Cooling Risk
-
-INC-0003
-INC-0008
-INC-0010
-
-Confidence: 85%
-```
-
----
-
-# API Endpoints
-
-## Incident Analysis
-
-```http
-POST /analyze_alert
-
-POST /analyze/{incident_id}
-```
-
-Analyzes incidents and generates operational intelligence.
-
----
-
-## Correlation
-
-```http
-GET /correlation/{incident_id}
-```
-
-Returns correlated operational context for an incident.
-
----
-
-## Risk Assessment
-
-```http
-GET /risk_summary
-```
-
-Provides site-wide operational risk visibility.
-
----
-
-## Incident Clustering
-
-```http
-GET /incident_clusters
-```
-
-Groups related incidents and identifies common causes.
-
----
-
-## Dataset Exploration
-
-```http
-GET /incidents
-```
-
-Lists available demo incidents.
-
----
-
-# Evaluation Results
-
-The platform includes an automated evaluation framework.
-
-## Evaluation Metrics
-
-- Severity Accuracy
-- Incident Type Accuracy
-- Escalation Team Accuracy
-
-## Current Evaluation
-
-```text
-Total Incidents: 10
-
-Severity Accuracy: 100%
-Incident Type Accuracy: 100%
-Escalation Team Accuracy: 100%
-
-Overall Accuracy: 100%
-```
-
-Evaluation reports are automatically generated and stored during validation runs.
-
----
-
-# Results
-
-The platform successfully demonstrates:
-
-- Incident Correlation
-- Root Cause Analysis
-- Failure Forecasting
-- Failure Cascade Simulation
-- Site-Wide Risk Scoring
-- Incident Clustering
-- Operational Recommendations
-- Production API Deployment on Nebius Serverless
-
----
-
-# Repository Structure
-
-```text
-api.py
-pipeline.py
-classification_engine.py
-correlation_engine.py
-forecast_engine.py
-cascade_engine.py
-risk_engine.py
-cluster_engine.py
-validation_engine.py
-evaluate.py
-dataset_v2.json
-```
-
----
-
-# Running Locally
-
-## Create Virtual Environment
+Run it with:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python evaluate.py --max-incidents 10
 ```
 
-## Install Dependencies
+On the evaluated sample the pipeline reports **100% accuracy** across severity, incident type, and escalation team:
+
+```
+Total incidents: 10
+Severity accuracy:       10/10 = 100.00%
+Incident type accuracy:  10/10 = 100.00%
+Escalation team accuracy: 10/10 = 100.00%
+All fields correct:      10/10 = 100.00%
+Overall accuracy: 100.00%
+```
+
+![Evaluation results](evidence/evaluation-results.png)
+
+---
+
+## Running on Nebius
+
+The Copilot uses the **Nebius OpenAI-compatible inference endpoint** for all LLM calls. Configuration is read from environment variables:
+
+| Variable | Purpose |
+|---|---|
+| `NEBIUS_API_KEY` | Nebius AI Studio API key. |
+| `NEBIUS_BASE_URL` | OpenAI-compatible base URL (for example `https://api.studio.nebius.com/v1/`). |
+| `NEBIUS_MODEL` | Served model identifier. |
+
+### Local
 
 ```bash
 pip install -r requirements.txt
+python -m uvicorn api:app --host 0.0.0.0 --port 8000
 ```
 
-## Start API
+### Container / Serverless
 
-```bash
-python api.py
-```
-
-Swagger UI:
-
-```text
-http://localhost:8000/docs
-```
-
----
-
-# Docker Deployment
-
-## Build Image
+The included `Dockerfile` builds a production image (Python 3.11 slim, non-root user, port 8000). Provide the Nebius environment variables at runtime; `.env` is intentionally excluded from the image.
 
 ```bash
 docker build -t ai-factory-copilot .
+docker run -p 8000:8000 \
+  -e NEBIUS_API_KEY=... \
+  -e NEBIUS_BASE_URL=... \
+  -e NEBIUS_MODEL=... \
+  ai-factory-copilot
 ```
 
-## Run Container
+The same container is deployed to Nebius as a serverless endpoint exposing the FastAPI Swagger UI:
 
-```bash
-docker run -p 8000:8000 ai-factory-copilot
-```
+![Nebius serverless endpoint running](evidence/nebius-endpoint/endpoint-running..png)
 
----
+![Swagger UI on Nebius](evidence/nebius-endpoint/swagger-cloud.png)
 
-# Future Enhancements
-
-- Real-Time Prometheus Integration
-- Historical Incident Learning
-- Automated Remediation Workflows
-- Multi-Site Correlation
-- Live Operations Dashboard
-- Agent-Based Incident Investigation
-- Predictive Capacity Planning
+![Incidents endpoint response](evidence/nebius-endpoint/incidents.png)
 
 ---
 
-# Built For
+## Evidence
 
-**Nebius Serverless AI Builders Challenge 2026**
+### Root Cause Analysis
 
-AI-powered operational intelligence for the next generation of AI factories.
+![Root cause analysis](evidence/root-cause-analysis.png)
+
+### Correlation Engine
+
+![Correlation engine](evidence/correlation-engine.png)
+
+### Failure Forecast
+
+![Failure forecast](evidence/failure-forecast.png)
+
+### SLA Clock Analysis
+
+![SLA clock analysis](evidence/sla-clock-analysis.png.png)
+
+### Executive Incident Commander Report
+
+![Incident commander executive report](evidence/incident-commander-executive-report.png)
+
+### Deployment
+
+![Docker Desktop](evidence/%20%20%20%20Docker%20Desktop.png)
+
+![Nebius job](evidence/nebius-job/percent.png)
+
+![Nebius job run](evidence/nebius-job/Screenshot%202026-06-22%20at%2011.33.51.png)
 
 ---
 
-## Author
+## Future Improvements
 
-Irena Kochtov
+The current system assumes incidents have already been collected from monitoring systems. Realistic next steps focus on closing the gap to live infrastructure:
 
-Infrastructure • Data Center Operations • Cloud • AI Infrastructure
+- **Live Prometheus ingestion** — Move from the sample alert adapter to a streaming Prometheus integration.
+- **DCIM integration** — Ingest real rack-level power, thermal, and capacity telemetry.
+- **BMS integration** — Connect facility-level cooling and environmental controls.
+- **Streaming events** — Process incidents continuously instead of on request.
+- **Multi-site support** — Extend correlation, risk, and commander logic across multiple data center sites.
 
-AWS Solutions Architect | Nebius AI Performance Engineering
+---
+
+*Built for the Nebius Serverless AI Builders Challenge.*
