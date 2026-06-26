@@ -3,6 +3,7 @@ from classification_engine import classify_incident
 from copilot import analyze_incident
 from correlation_engine import calculate_correlation_context
 from forecast_engine import generate_failure_forecast
+from incident_history_engine import find_similar_incidents
 from incident_preprocessor import prepare_incident_for_inference
 from validation_engine import enforce_deterministic_classification
 
@@ -40,6 +41,13 @@ def run_analysis_pipeline(incident: dict) -> dict:
 
     prediction["failure_cascade"] = build_failure_cascade(
         prediction.get("incident_type"),
+    )
+
+    prediction["similar_incidents"] = find_similar_incidents(
+        {
+            **clean_incident,
+            "incident_type": prediction.get("incident_type"),
+        }
     )
 
     return {
