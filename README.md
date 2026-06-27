@@ -10,7 +10,7 @@
 
 The **AI Factory Operations Copilot** ingests multi-source operational signals from an AI data center, correlates and classifies each incident with deterministic engines, routes it to a domain-specialized LLM agent for reasoning, and then coordinates a fleet-wide executive response through an Incident Commander. The design goal is simple and deliberate: **the LLM explains and recommends; deterministic code decides anything that touches safety or routing.**
 
-![AI Factory Operations Copilot architecture](docs/architecture.svg)
+![AI Factory Operations Copilot architecture](docs/architecture.png)
 
 ---
 
@@ -417,7 +417,7 @@ serverlessv2/
 ├── README.md
 │
 ├── docs/
-│   └── architecture.svg         # System architecture diagram
+│   └── architecture.png         # System architecture diagram
 │
 ├── evidence/                    # Screenshots and demo artifacts
 │
